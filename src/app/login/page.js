@@ -38,11 +38,10 @@ export default function LoginPage() {
     } else {
       toast.success("Logged in successfully!");
       if (role === "promoter") {
-        router.push("/dashboard/promoter");
+        window.location.href = "/dashboard/promoter";
       } else {
-        router.push("/dashboard/customer");
+        window.location.href = "/dashboard/customer";
       }
-      router.refresh();
     }
   };
 

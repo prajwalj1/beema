@@ -44,8 +44,7 @@ export default function AdminLoginPage() {
       setIsLoading(false);
     } else {
       toast.success("Administrator session authorized!");
-      router.push("/dashboard/admin");
-      router.refresh();
+      window.location.href = "/dashboard/admin";
     }
   };
 
