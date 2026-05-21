@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -83,19 +84,19 @@ export default function Footer() {
           <div className="text-center md:text-left">
             <h4 className="text-neutral-900 font-bold text-sm mb-4 tracking-wider uppercase">Products</h4>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Child Endowment</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Whole Life Policies</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Health & Medical Cover</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Term Life Insurance</a></li>
+              <li><Link href="/child-endowment" className="hover:text-brand-600 transition-colors">Child Endowment</Link></li>
+              <li><Link href="/whole-life-policies" className="hover:text-brand-600 transition-colors">Whole Life Policies</Link></li>
+              <li><Link href="/health-and-medical-cover" className="hover:text-brand-600 transition-colors">Health & Medical Cover</Link></li>
+              <li><Link href="/term-life-insurance" className="hover:text-brand-600 transition-colors">Term Life Insurance</Link></li>
             </ul>
           </div>
           <div className="text-center md:text-left">
             <h4 className="text-neutral-900 font-bold text-sm mb-4 tracking-wider uppercase">Company</h4>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-brand-600 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Our Partners</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Contact Support</a></li>
-              <li><a href="#" className="hover:text-brand-600 transition-colors">Privacy Policy</a></li>
+              <li><Link href="/about" className="hover:text-brand-600 transition-colors">About Us</Link></li>
+              <li><Link href="/partners" className="hover:text-brand-600 transition-colors">Our Partners</Link></li>
+              <li><Link href="/contact" className="hover:text-brand-600 transition-colors">Contact Support</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-brand-600 transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
         </div>

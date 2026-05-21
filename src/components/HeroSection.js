@@ -49,42 +49,14 @@ export default function HeroSection() {
               Beema Dukaan simplifies finding, comparing, and securing insurance. Whether you are looking for child plans, long-term endowment policies, health coverage, or combined packages, we help you make data-driven choices instantly.
             </p>
 
-            {/* ── Quick Search Widget ── */}
-            <div className="p-2 md:p-3 bg-white rounded-2xl md:rounded-full border border-neutral-200 shadow-lg max-w-2xl mx-auto lg:mx-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              {/* Input */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-2 border-b sm:border-b-0 sm:border-r border-neutral-100">
-                <svg className="w-5 h-5 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Enter child's age or insurance type..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="w-full bg-transparent border-0 outline-none text-neutral-800 placeholder-slate-400 text-sm focus:ring-0 focus:outline-none"
-                />
-                {/* Clear button */}
-                {search && (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="text-neutral-300 hover:text-neutral-500 transition-colors shrink-0"
-                    aria-label="Clear search"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-
-              {/* Compare Now button */}
+            {/* ── Compare Action ── */}
+            <div className="flex justify-center lg:justify-start">
               <button
                 onClick={handleCompare}
-                className="px-6 py-3.5 rounded-xl md:rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-all duration-300 shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 flex items-center justify-center gap-2"
+                className="px-8 py-4 rounded-xl md:rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-base transition-all duration-300 shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center gap-2"
               >
                 Compare Now
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
