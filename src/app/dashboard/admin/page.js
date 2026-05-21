@@ -87,7 +87,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { stats, preProposals = [], promoters = [], payoutRequests = [], leads = [] } = dashboardData || {};
+  const { stats, preProposals = [], promoters = [], payoutRequests = [], leads = [], lockedRates = [] } = dashboardData || {};
 
   return (
     <div className="min-h-screen bg-[#070F21] text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
@@ -162,6 +162,16 @@ export default function AdminDashboard() {
           >
             Promoter Sales Leads ({leads.length})
           </button>
+          <button
+            onClick={() => setActiveTab("lockedRates")}
+            className={`pb-4 px-2 font-bold text-sm tracking-wide transition-all uppercase shrink-0 border-b-2 cursor-pointer ${
+              activeTab === "lockedRates"
+                ? "border-amber-500 text-amber-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Locked Rates ({lockedRates.length})
+          </button>
         </div>
 
         {/* Tab Contents */}
@@ -200,6 +210,44 @@ export default function AdminDashboard() {
         {activeTab === "leads" && (
           <div className="space-y-6">
             <AdminLeadsTable leads={leads} />
+          </div>
+        )}
+
+        {activeTab === "lockedRates" && (
+          <div className="bg-[#0F1C3F] rounded-3xl p-6 sm:p-8 border border-blue-900/40 shadow-xl overflow-hidden">
+            <h2 className="text-xl font-bold text-white mb-6">Locked Rates</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-blue-900/40 text-blue-200 uppercase tracking-widest text-xs">
+                    <th className="pb-4 pr-6">User</th>
+                    <th className="pb-4 pr-6">Email</th>
+                    <th className="pb-4 pr-6">Company</th>
+                    <th className="pb-4 pr-6">Plan Name</th>
+                    <th className="pb-4 pr-6">Premium</th>
+                    <th className="pb-4 pr-6">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="text-slate-300">
+                  {lockedRates.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-6 text-slate-400">No locked rates found.</td>
+                    </tr>
+                  ) : (
+                    lockedRates.map((rate, i) => (
+                      <tr key={rate._id} className={i !== lockedRates.length - 1 ? "border-b border-blue-900/20" : ""}>
+                        <td className="py-4 pr-6 font-semibold text-white">{rate.userId?.name || "Unknown"}</td>
+                        <td className="py-4 pr-6 text-slate-400">{rate.userId?.email || "Unknown"}</td>
+                        <td className="py-4 pr-6">{rate.company}</td>
+                        <td className="py-4 pr-6 text-amber-400">{rate.planName}</td>
+                        <td className="py-4 pr-6">Rs {rate.premium}</td>
+                        <td className="py-4 pr-6">{new Date(rate.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

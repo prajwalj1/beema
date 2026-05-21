@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const plans = [
   {
@@ -59,35 +62,105 @@ const features = [
 ];
 
 export default function BestRatePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [locked, setLocked] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [lockedPlan, setLockedPlan] = useState(null);
 
   const handleLock = async (planId) => {
+    if (status === "loading") return; // wait for session to load
+
+    if (status === "unauthenticated") {
+      toast.error("Please login to lock a rate.", { duration: 3000 });
+      router.push("/login?callbackUrl=/best-rate");
+      return;
+    }
+
+    const plan = plans.find((p) => p.id === planId);
+    if (!plan) return;
+
     setLocked(planId);
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    setSuccess(true);
+
+    try {
+      const res = await fetch("/api/locked-rates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: plan.id,
+          company: plan.company,
+          planName: plan.plan,
+          premium: plan.premium
+        })
+      });
+
+      if (res.ok) {
+        toast.success(
+          `🔒 Rate Locked! ${plan.company} — ${plan.plan} at Rs ${plan.premium.toLocaleString()}/yr`,
+          { duration: 5000 }
+        );
+        setLockedPlan(plan);
+        setSuccess(true);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || "Failed to lock rate. Please try again.");
+        setLocked(null);
+      }
+    } catch (err) {
+      toast.error("Network error. Please check your connection and try again.");
+      setLocked(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (success) {
-    const plan = plans.find((p) => p.id === locked);
+  if (success && lockedPlan) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-6">
         <div className="max-w-lg w-full text-center bg-white rounded-3xl shadow-2xl p-10 border border-neutral-100">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-            </svg>
+          {/* Success animation ring */}
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-emerald-100 animate-ping opacity-30" />
+            <div className="relative w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center">
+              <svg className="w-12 h-12 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100 mb-4">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Rate Successfully Locked
           </div>
           <h2 className="text-2xl font-black text-neutral-900 mb-2">Rate Locked In! 🎉</h2>
           <p className="text-neutral-500 mb-1">
-            You've locked in <strong>{plan.company} — {plan.plan}</strong>
+            You've locked in <strong>{lockedPlan.company} — {lockedPlan.plan}</strong>
           </p>
-          <p className="text-neutral-500 mb-8">
-            at <strong className="text-brand-600">Rs {plan.premium.toLocaleString()}/yr</strong>. Our advisor will contact you within 24 hours.
+          <p className="text-neutral-500 mb-2">
+            at <strong className="text-brand-600">Rs {lockedPlan.premium.toLocaleString()}/yr</strong>.
           </p>
+          <p className="text-neutral-400 text-sm mb-8">
+            Our advisor will contact you within 24 hours to finalize your policy.
+          </p>
+          <div className="bg-neutral-50 rounded-2xl p-4 mb-8 text-left space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Company</span>
+              <span className="font-bold text-neutral-800">{lockedPlan.company}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Plan</span>
+              <span className="font-bold text-neutral-800">{lockedPlan.plan}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Annual Premium</span>
+              <span className="font-bold text-brand-600">Rs {lockedPlan.premium.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Locked by</span>
+              <span className="font-bold text-neutral-800">{session?.user?.name || session?.user?.email}</span>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/"
@@ -109,6 +182,31 @@ export default function BestRatePage() {
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
+
+      {/* ── Auth Guard Banner ── */}
+      {status === "unauthenticated" && (
+        <div className="sticky top-20 z-40 bg-amber-50 border-b border-amber-200 px-4 py-3">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <p className="text-sm text-amber-800 font-semibold">
+                🔒 You need to be logged in to lock a rate. Browse plans freely below.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/login?callbackUrl=/best-rate")}
+              className="shrink-0 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition-all"
+            >
+              Login to Lock Rate
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ── */}
       <section className="relative pt-30 pb-30 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900" />
@@ -194,7 +292,7 @@ export default function BestRatePage() {
                       plan.highlight
                         ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-500/20 hover:shadow-lg'
                         : 'bg-neutral-900 hover:bg-neutral-700 text-white'
-                    } disabled:opacity-60`}
+                    } disabled:opacity-60 cursor-pointer`}
                   >
                     {loading && locked === plan.id ? (
                       <>
@@ -202,7 +300,14 @@ export default function BestRatePage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Locking…
+                        Locking in Rate…
+                      </>
+                    ) : status === "unauthenticated" ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login to Lock Rate
                       </>
                     ) : (
                       <>
@@ -258,10 +363,20 @@ export default function BestRatePage() {
                     <td className="px-4 py-4 text-center">
                       <button
                         onClick={() => handleLock(plan.id)}
-                        disabled={loading}
-                        className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-xs font-bold hover:bg-neutral-700 transition-all disabled:opacity-60"
+                        disabled={loading && locked === plan.id}
+                        className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-xs font-bold hover:bg-neutral-700 transition-all disabled:opacity-60 cursor-pointer flex items-center gap-1.5 mx-auto"
                       >
-                        Lock
+                        {loading && locked === plan.id ? (
+                          <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        )}
+                        {status === "unauthenticated" ? "Login" : loading && locked === plan.id ? "Locking…" : "Lock"}
                       </button>
                     </td>
                   </tr>
