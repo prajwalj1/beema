@@ -8,7 +8,6 @@ import Payment from "@/models/Payment";
 import User from "@/models/User";
 import PayoutRequest from "@/models/PayoutRequest";
 import Lead from "@/models/Lead";
-import LockedRate from "@/models/LockedRate";
 
 export const dynamic = "force-dynamic";
 
@@ -106,10 +105,6 @@ export async function GET(req) {
       createdAt: l.createdAt ? l.createdAt.toISOString().split("T")[0] : "N/A"
     }));
 
-    // 6. Fetch Locked Rates
-    const lockedRates = await LockedRate.find().populate("userId", "name email").sort({ createdAt: -1 }).lean();
-
-
     return NextResponse.json({
       stats: {
         totalUsers,
@@ -122,8 +117,7 @@ export async function GET(req) {
       preProposals,
       promoters: promotersData,
       payoutRequests,
-      leads: leadsData,
-      lockedRates
+      leads: leadsData
     });
   } catch (error) {
     console.error("GET Admin Dashboard error:", error);
